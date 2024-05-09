@@ -1,0 +1,10 @@
+type Post @key(fields: "id") {
+  id: ID!
+  createdAt: String! @override(from: "non-existing") @shareable
+}
+
+type Query {
+  feed: [Post] @shareable
+  bFeed: [Post]
+  postById(id: ID!): Post @lookup
+}

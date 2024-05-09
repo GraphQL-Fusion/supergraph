@@ -1,0 +1,18 @@
+enum Graph {
+  A @graph(name: "a")
+  B @graph(name: "b")
+}
+
+type Post
+  @type(graph: A, key: "id", lookup: "postById")
+  @type(graph: B, key: "id", lookup: "postById") {
+  id: ID!
+  createdAt: String!
+}
+
+type Query @type(graph: A) @type(graph: B) {
+  feed: [Post]
+  aFeed: [Post] @field(graph: A)
+  bFeed: [Post] @field(graph: B)
+  postById(id: ID!): Post
+}
