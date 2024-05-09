@@ -1,0 +1,52 @@
+enum join__Graph {
+  ACCOUNTS @graph(name: "accounts")
+  INVENTORY @graph(name: "inventory")
+  PRODUCTS @graph(name: "products")
+  REVIEWS @graph(name: "reviews")
+}
+
+type Product
+  @type(graph: INVENTORY, key: "upc", lookup: "productByUpc")
+  @type(graph: PRODUCTS, key: "upc", lookup: "productByUpc")
+  @type(graph: REVIEWS, key: "upc", lookup: "productByUpc") {
+  upc: String!
+  weight: Int @field(graph: INVENTORY, external: true) @field(graph: PRODUCTS)
+  price: Int @field(graph: INVENTORY, external: true) @field(graph: PRODUCTS)
+  inStock: Boolean @field(graph: INVENTORY)
+  shippingEstimate: Int @field(graph: INVENTORY, requires: "price weight")
+  name: String @field(graph: PRODUCTS)
+  reviews: [Review] @field(graph: REVIEWS)
+}
+
+type Query
+  @type(graph: ACCOUNTS)
+  @type(graph: INVENTORY)
+  @type(graph: PRODUCTS)
+  @type(graph: REVIEWS) {
+  me: User @field(graph: ACCOUNTS)
+  products: [Product] @field(graph: PRODUCTS)
+  userById(id: ID!): User @field(graph: ACCOUNTS) @field(graph: REVIEWS)
+  reviewById(id: ID!): Review @field(graph: REVIEWS)
+  productByUpc(upc: String!): Product
+    @field(graph: INVENTORY)
+    @field(graph: PRODUCTS)
+    @field(graph: REVIEWS)
+}
+
+type Review @type(graph: REVIEWS, key: "id", lookup: "reviewById") {
+  id: ID!
+  body: String
+  author: User @field(graph: REVIEWS, provides: "username")
+  product: Product
+}
+
+type User
+  @type(graph: ACCOUNTS, key: "id", lookup: "userById")
+  @type(graph: REVIEWS, key: "id", lookup: "userById") {
+  id: ID!
+  name: String @join__field(graph: ACCOUNTS)
+  username: String
+    @join__field(graph: ACCOUNTS)
+    @join__field(graph: REVIEWS, external: true)
+  reviews: [Review] @join__field(graph: REVIEWS)
+}

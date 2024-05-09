@@ -1,0 +1,12 @@
+type Query {
+  productByUpc(upc: String!): Product @lookup
+}
+
+type Product @key(fields: "upc") {
+  upc: String!
+  weight: Int @external
+  price: Int @external
+  inStock: Boolean
+  # TODO: how to specify in Query.productByUpc that `Product.shippingEstimate` requires `Product.price` and `Product.weight`?
+  shippingEstimate: Int @require(fields: "price weight")
+}
