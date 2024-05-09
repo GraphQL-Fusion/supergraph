@@ -1,0 +1,18 @@
+enum Graph {
+  EMAIL @graph(name: "email")
+  NICKNAME @graph(name: "nickname")
+}
+
+type Query @type(graph: EMAIL) @type(graph: NICKNAME) {
+  user: User @field(graph: EMAIL)
+  userById(id: ID!): User @field(graph: EMAIL)
+  userByEmail(email: String!): User @field(graph: NICKNAME)
+}
+
+type User
+  @type(graph: EMAIL, key: "id", lookup: "userById")
+  @type(graph: NICKNAME, key: "email", lookup: "userByEmail") {
+  id: ID! @field(graph: EMAIL)
+  email: String! @field(graph: EMAIL) @field(graph: NICKNAME, external: true)
+  nickname: String! @field(graph: NICKNAME)
+}
