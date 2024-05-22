@@ -1,14 +1,26 @@
 directive @graph(name: String!) on ENUM_VALUE
 
 directive @type(
-  graph: Graph!
-  key: FieldSet
-  lookup: String
+  graph: [Graph!]!
 ) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @lookup(
+  graph: Graph!
+  key: String!
+  field: String!
+  map: String!
+  patch: Boolean! = false
+) repeatable on OBJECT
+
+directive @requires(
+  graph: Graph!
+  field: String!
+  map: String!
+) repeatable on OBJECT
+
 
 directive @field(
   graph: Graph
-  requires: FieldSet
   provides: FieldSet
   type: String # source type
   external: Boolean
@@ -17,9 +29,7 @@ directive @field(
 
 directive @inputField(
   graph: Graph
-  requires: FieldSet
   type: String # source type
-  is: String
 ) repeatable on INPUT_FIELD_DEFINITION
 
 directive @implements(
@@ -73,7 +83,7 @@ type Query
     @field(graph: A) 
 }
 
-input UserFinder @oneOf {
+input UserFinder @type(graph: A) @oneOf {
   id: ID
   uuid: String
 }
@@ -83,12 +93,16 @@ input UserFinder {
 }
 
 type User implements Node
-  @type(
+  @type(graph: [A C])
+  
+  @lookup(
     graph: B,
     key: "uuid",
-    lookup: "user(finder: UserFinder!)", 
+    lookup: "user(finder: UserFinder!) : User", 
     map: "{ finder: { id: foo.<Bar>.id | foo.<Baz>.hello.id } }",
     patch: true)
+
+ 
 
   @type(graph: A, key: "id" lookup: "userById")
   @type(graph: A, key: "id" lookup: "userById")
