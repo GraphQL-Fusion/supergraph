@@ -1,0 +1,89 @@
+directive @graph(name: String!) on ENUM_VALUE
+
+directive @type(
+  graph: Graph!
+  key: FieldSet
+  lookup: String
+) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @field(
+  graph: Graph
+  requires: FieldSet
+  provides: FieldSet
+  type: String # source type
+  external: Boolean
+  override: Graph
+) repeatable on FIELD_DEFINITION
+
+directive @inputField(
+  graph: Graph
+  requires: FieldSet
+  type: String # source type
+  is: String
+) repeatable on INPUT_FIELD_DEFINITION
+
+directive @implements(
+  graph: Graph!
+  interface: String!
+) repeatable on OBJECT | INTERFACE
+
+directive @unionMember(
+  graph: Graph!, 
+  member: String!
+) repeatable on UNION
+
+directive @enumValue(graph: Graph!) repeatable on ENUM_VALUE
+
+enum Graph {
+  A @graph(name: "a") 
+  B @graph(name: "b")
+  C @graph(name: "c")
+  D @graph(name: "d")
+}
+
+type B {
+  id: ID!
+  user: User!
+}
+
+type D {
+  id: ID!
+  user: User! @field(graph: D, provides: "id")
+}
+
+type Query 
+  @type(graph: A) 
+  @type(graph: B) 
+  @type(graph: C) 
+  @type(graph: D) {
+  a: User @field(graph: A)
+  userById(
+    id: ID! 
+      @inputField(graph: A, is: "id") 
+      @inputField(graph: B, is: "id")
+      ): User 
+        @internal 
+        @field(graph: A) 
+        @field(graph: B)
+  userByUuid(uuid: String!): User 
+    @internal 
+    @field(graph: A)
+}
+
+type User implements Node
+  @type(graph: A, key: "id" lookup: "userById")
+  @type(graph: A, key: "id" lookup: "userById")
+  @type(graph: A, key: "uuid" lookup: "userByUuid")
+  @type(graph: B, key: "uuid" lookup: "userByUuid")
+  @type(graph: C, key: "id" lookup: "userById")
+  @type(graph: C, key: "uuid" lookup: "userByUuid")
+  @type(graph: D, key: "uuid" lookup: "userByUuid") 
+  @implements(graph: B, interface: "Node") {
+  id: ID! 
+    @field(graph: A) 
+    @field(graph: C) 
+    @field(graph: D, external: true)
+  uuid: String!
+  name: String! @field(graph: A)
+  commentCount: Int! @field(graph: C)
+}
