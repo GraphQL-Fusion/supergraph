@@ -68,31 +68,21 @@ type Query
   userByUuid(uuid: String!): User 
     @internal 
     @field(graph: A)
-  
-  user(finder: UserFinder!): User
+  user(finder: UserFinder!): User 
     @field(graph: A) 
-}
-
-input UserFinder @oneOf {
-  id: ID
-  uuid: String
+    @field(graph: B internal: true) 
 }
 
 input UserFinder {
   id: ID
+  uuid: String
 }
 
 type User implements Node
-  @type(
-    graph: B,
-    key: "uuid",
-    lookup: "user(finder: UserFinder!)", 
-    map: "{ finder: { id: foo.<Bar>.id | foo.<Baz>.hello.id } }",
-    patch: true)
-
   @type(graph: A, key: "id" lookup: "userById")
   @type(graph: A, key: "id" lookup: "userById")
   @type(graph: A, key: "uuid" lookup: "user")
+  @type(graph: B, key: "uuid" lookup: "user", patch: true, map: "{ id: { id: id } }")
   @type(graph: B, key: "id" lookup: "user")
   @type(graph: A, key: "uuid" lookup: "userByUuid")
   @type(graph: B, key: "uuid" lookup: "userByUuid")
