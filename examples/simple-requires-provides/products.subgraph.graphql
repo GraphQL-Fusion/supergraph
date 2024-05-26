@@ -1,0 +1,11 @@
+type Query {
+  products: [Product]
+  productByUpc(upc: String!): Product @lookup
+}
+
+type Product @key(fields: "upc") {
+  upc: String!
+  name: String
+  price: Int
+  weight: Int
+}

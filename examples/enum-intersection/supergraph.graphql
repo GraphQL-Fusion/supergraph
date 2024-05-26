@@ -1,0 +1,22 @@
+enum Graph {
+  A @graph(name: "a")
+  B @graph(name: "b")
+}
+
+type Query @type(graph: A) @type(graph: B) {
+  users: [User] @field(graph: A)
+  usersByType(type: UserType!): [User!] @field(graph: B)
+  userById(id: ID!): User
+}
+
+type User
+  @type(graph: A, key: "id", lookup: "userById")
+  @type(graph: B, key: "id", lookup: "userById") {
+  id: ID
+  type: UserType
+}
+
+enum UserType @type(graph: A) @type(graph: B) {
+  REGULAR @enumValue(graph: A) @enumValue(graph: B)
+  ANONYMOUS @inaccessible @enumValue(graph: B)
+}

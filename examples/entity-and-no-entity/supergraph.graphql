@@ -1,0 +1,14 @@
+enum Graph {
+  A @graph(name: "a")
+  B @graph(name: "b")
+}
+
+type Query @type(graph: A) @type(graph: B) {
+  users: [User]
+  userById(id: ID!): User @field(graph: B)
+}
+
+type User @type(graph: A) @type(graph: B, key: "id", lookup: "userById") {
+  id: ID
+  name: String @field(graph: B)
+}

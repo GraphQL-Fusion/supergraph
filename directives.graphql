@@ -1,0 +1,39 @@
+directive @graph(name: String!) on ENUM_VALUE
+
+directive @type(
+  graph: Graph!
+  key: FieldSet
+  lookup: String
+) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @field(
+  graph: Graph
+  requires: FieldSet
+  provides: FieldSet
+  type: String # source type
+  external: Boolean
+  override: Graph
+) repeatable on FIELD_DEFINITION
+
+directive @inputField(
+  graph: Graph
+  requires: FieldSet
+  type: String # source type
+  is: String
+) repeatable on INPUT_FIELD_DEFINITION
+
+directive @implements(
+  graph: Graph!
+  interface: String!
+) repeatable on OBJECT | INTERFACE
+
+directive @unionMember(graph: Graph!, member: String!) repeatable on UNION
+
+directive @enumValue(graph: Graph!) repeatable on ENUM_VALUE
+
+enum Graph {
+  A @graph(name: "a")
+  B @graph(name: "b")
+  C @graph(name: "c")
+  D @graph(name: "d")
+}

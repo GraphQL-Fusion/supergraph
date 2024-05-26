@@ -1,0 +1,8 @@
+type Query {
+  userByEmail(email: String!): User @lookup
+}
+
+type User @key(fields: "email") {
+  email: String! @external
+  nickname: String!
+}

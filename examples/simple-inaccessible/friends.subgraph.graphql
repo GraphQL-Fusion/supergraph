@@ -1,0 +1,15 @@
+type Query {
+  usersInFriends: [User!]!
+  userById(id: ID!): User @lookup
+}
+
+type User @key(fields: "id") {
+  id: ID
+  friends(type: FriendType = FAMILY @inaccessible): [User!]!
+  type: FriendType
+}
+
+enum FriendType {
+  FAMILY @inaccessible
+  FRIEND
+}

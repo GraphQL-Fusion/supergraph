@@ -1,0 +1,14 @@
+type Query {
+  usersByType(type: UserType!): [User!]
+  userById(id: ID!): User @lookup
+}
+
+type User @key(fields: "id") {
+  id: ID
+  type: UserType @shareable
+}
+
+enum UserType {
+  ANONYMOUS @inaccessible
+  REGULAR
+}

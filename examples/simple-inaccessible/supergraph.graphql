@@ -1,0 +1,25 @@
+enum Graph {
+  AGE @graph(name: "age")
+  FRIENDS @graph(name: "friends")
+}
+
+enum FriendType @type(graph: FRIENDS) {
+  FAMILY @inaccessible @enumValue(graph: FRIENDS)
+  FRIEND @enumValue(graph: FRIENDS)
+}
+
+type Query @type(graph: AGE) @type(graph: FRIENDS) {
+  usersInAge: [User!]! @field(graph: AGE)
+  usersInFriends: [User!]! @field(graph: FRIENDS)
+  userById(id: ID!): User
+}
+
+type User
+  @type(graph: AGE, key: "id", lookup: "userById")
+  @type(graph: FRIENDS, key: "id", lookup: "userById") {
+  id: ID
+  age: Int @field(graph: AGE)
+  friends(type: FriendType = FAMILY @inaccessible): [User!]!
+    @field(graph: FRIENDS)
+  type: FriendType @field(graph: FRIENDS)
+}

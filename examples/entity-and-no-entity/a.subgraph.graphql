@@ -1,0 +1,7 @@
+type User {
+  id: ID @shareable
+}
+
+type Query {
+  users: [User!]! @shareable
+}

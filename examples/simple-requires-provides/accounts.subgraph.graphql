@@ -1,0 +1,10 @@
+type Query {
+  me: User
+  userById(id: ID!): User @lookup
+}
+
+type User @key(fields: "id") {
+  id: ID!
+  name: String
+  username: String @shareable
+}

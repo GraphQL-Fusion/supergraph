@@ -1,0 +1,10 @@
+type Post @key(fields: "id") {
+  id: ID!
+  createdAt: String! @shareable
+}
+
+type Query {
+  feed: [Post] @shareable
+  aFeed: [Post]
+  postById(id: ID!): Post @lookup
+}
