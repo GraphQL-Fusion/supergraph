@@ -1,0 +1,10 @@
+@lookup(
+        schema: A, 
+        key: "id", 
+        lookup: "foo(id:$id @type(bar: foo)).product(id1:ID!)"
+        lookup: "product(id: ID!): Product"
+        lookup: "node(id: ID!): Node"
+        lookup: "foo(id:ID!).product(id1:ID!)"
+        lookup: "($id1: ID!, $id2: ID!) { foo(id: $id1) { product(id1: $id2) } }"
+        lookup: "node(id: ID!): Node"
+        map: "id")

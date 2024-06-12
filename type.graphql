@@ -1,0 +1,58 @@
+
+
+type Query
+    @type(schema: A) 
+    @type(schema: B) {
+    product(id: ID!): Product
+        @field(schema: A)
+}
+
+type Product
+    @type(schema: A) 
+    @type(schema: B) 
+    @lookup(
+        schema: A, 
+        key: "id", 
+        lookup: "node(id:ID!)"
+        lookup: "node(id:ID!): Node"
+        map: "id") {
+    id: ID! 
+        @field(schema: A)
+        @field(schema: B)
+    name: String!
+        @field(schema: A)
+        @field(schema: B)
+    price: Int!
+        @field(schema: A)
+    reviews: [Review]
+        @field(schema: A)
+        @field(schema: B, sourceType: "[Review!]")
+
+    foo(id: ID): Product
+
+    foo(id: ID!): Product
+}
+
+type Review {
+    id: ID!
+    body: String!
+    rating: Int!
+}
+
+enum Schema {
+  A @schema(name: "a") 
+  B @schema(name: "b")
+}
+
+directive @schema(name: String!) on ENUM_VALUE
+
+directive @type(
+  schema: Schema!
+) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @field(
+  schema: Schema!
+  provides: FieldSelectionSet
+  sourceType: Type
+  external: Boolean! = false
+) repeatable on FIELD_DEFINITION

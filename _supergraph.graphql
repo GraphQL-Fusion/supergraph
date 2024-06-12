@@ -1,54 +1,51 @@
-directive @graph(name: String!) on ENUM_VALUE
+directive @schema(name: String!) on ENUM_VALUE
 
 directive @type(
-  graph: [Graph!]!
+  schema: Schema!
 ) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
 
 directive @lookup(
-  graph: Graph!
+  schema: Schema!
   key: String!
-  field: String!
-  map: String!
-  patch: Boolean! = false
-) repeatable on OBJECT
+  field: [FieldDefinition!]
+  map: [FieldSelectionMap!]
+) repeatable on OBJECT | INTERFACE
 
 directive @requires(
-  graph: Graph!
+  schema: Schema!
   field: String!
   map: String!
 ) repeatable on OBJECT
 
-
 directive @field(
-  graph: Graph
+  schema: Schema
   provides: FieldSet
-  type: String # source type
-  external: Boolean
-  override: Graph
+  sourceType: Type
+  external: Boolean! = false
 ) repeatable on FIELD_DEFINITION
 
-directive @inputField(
-  graph: Graph
-  type: String # source type
-) repeatable on INPUT_FIELD_DEFINITION
-
 directive @implements(
-  graph: Graph!
+  schema: Schema!
   interface: String!
 ) repeatable on OBJECT | INTERFACE
 
 directive @unionMember(
-  graph: Graph!, 
+  schema: Schema!, 
   member: String!
 ) repeatable on UNION
 
-directive @enumValue(graph: Graph!) repeatable on ENUM_VALUE
+directive @enumValue(schema: Schema!) repeatable on ENUM_VALUE
 
-enum Graph {
-  A @graph(name: "a") 
-  B @graph(name: "b")
-  C @graph(name: "c")
-  D @graph(name: "d")
+scalar FieldDefinition
+scalar FieldSelectionMap
+scalar FieldSelectionSet
+scalar Type
+
+enum Schema {
+  A @schema(name: "a") 
+  B @schema(name: "b")
+  C @schema(name: "c")
+  D @schema(name: "d")
 }
 
 type B {
@@ -58,32 +55,41 @@ type B {
 
 type D {
   id: ID!
-  user: User! @field(graph: D, provides: "id")
+  user: User! @field(schema: D, provides: "id")
+}
+
+type E {
+  id: ID!
+  foo(id: ID!): Foo
+  foo(id: ID!, foo: String @require(field: "")): Foo
+    @require(schema: A, argument: "foo: String!",  map: "id")
+    @require(schema: A, argument: "foo: String!",  map: "id")
+    @require(schema: A, argument: "foo: String!",  map: "id")
 }
 
 type Query 
-  @type(graph: A) 
-  @type(graph: B) 
-  @type(graph: C) 
-  @type(graph: D) {
-  a: User @field(graph: A)
+  @type(schema: A) 
+  @type(schema: B) 
+  @type(schema: C) 
+  @type(schema: D) {
+  a: User @field(schema: A)
   userById(
     id: ID! 
-      @inputField(graph: A, is: "id") 
-      @inputField(graph: B, is: "id")
+      @inputField(schema: A, is: "id") 
+      @inputField(schema: B, is: "id")
       ): User 
         @internal 
-        @field(graph: A) 
-        @field(graph: B)
+        @field(schema: A) 
+        @field(schema: B)
   userByUuid(uuid: String!): User 
     @internal 
-    @field(graph: A)
+    @field(schema: A)
   
   user(finder: UserFinder!): User
-    @field(graph: A) 
+    @field(schema: A) 
 }
 
-input UserFinder @type(graph: A) @oneOf {
+input UserFinder @type(schema: A) @oneOf {
   id: ID
   uuid: String
 }
@@ -93,10 +99,10 @@ input UserFinder {
 }
 
 type User implements Node
-  @type(graph: [A C])
+  @type(schema: [A C])
   
   @lookup(
-    graph: B,
+    schema: B,
     key: "uuid",
     lookup: "user(finder: UserFinder!) : User", 
     map: "{ finder: { id: foo.<Bar>.id | foo.<Baz>.hello.id } }",
@@ -104,21 +110,21 @@ type User implements Node
 
  
 
-  @type(graph: A, key: "id" lookup: "userById")
-  @type(graph: A, key: "id" lookup: "userById")
-  @type(graph: A, key: "uuid" lookup: "user")
-  @type(graph: B, key: "id" lookup: "user")
-  @type(graph: A, key: "uuid" lookup: "userByUuid")
-  @type(graph: B, key: "uuid" lookup: "userByUuid")
-  @type(graph: C, key: "id" lookup: "userById")
-  @type(graph: C, key: "uuid" lookup: "userByUuid")
-  @type(graph: D, key: "uuid" lookup: "userByUuid") 
-  @implements(graph: B, interface: "Node") {
+  @type(schema: A, key: "id" lookup: "userById")
+  @type(schema: A, key: "id" lookup: "userById")
+  @type(schema: A, key: "uuid" lookup: "user")
+  @type(schema: B, key: "id" lookup: "user")
+  @type(schema: A, key: "uuid" lookup: "userByUuid")
+  @type(schema: B, key: "uuid" lookup: "userByUuid")
+  @type(schema: C, key: "id" lookup: "userById")
+  @type(schema: C, key: "uuid" lookup: "userByUuid")
+  @type(schema: D, key: "uuid" lookup: "userByUuid") 
+  @implements(schema: B, interface: "Node") {
   id: ID! 
-    @field(graph: A) 
-    @field(graph: C) 
-    @field(graph: D, external: true)
+    @field(schema: A) 
+    @field(schema: C) 
+    @field(schema: D, external: true)
   uuid: String!
-  name: String! @field(graph: A)
-  commentCount: Int! @field(graph: C)
+  name: String! @field(schema: A)
+  commentCount: Int! @field(schema: C)
 }
